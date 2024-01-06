@@ -7,9 +7,9 @@ const usePeer = () => {
 
     useEffect(() => {
         if (isPeerSet.current) return;
-        isPeerSet.current = true
+        isPeerSet.current = true;
         (async function initPeer(){
-            const myPeer = new (await import('peerjs').default())
+            const myPeer = new (await import('peerjs')).default()
             setPeer(myPeer)
 
             myPeer.on('open', (id) => {
