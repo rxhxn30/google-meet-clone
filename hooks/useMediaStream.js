@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 
 const useMediaStream = ()=> {
     const[state, setState] = useState(null)
-    const isStreamSet = useRef(False)
+    const isStreamSet = useRef(false)
 
     useEffect(() => {
         if(isStreamSet.current) return;
