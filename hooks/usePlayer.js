@@ -1,7 +1,7 @@
-const { useState } = require("react")
+import { useState } from "react";
 
 const usePlayer = () => {
-    const [players, setPlayers] = useState([])
+    const [players, setPlayers] = useState({})
 
     return {players, setPlayers}
 }

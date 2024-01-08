@@ -10,7 +10,7 @@ const Room = () => {
     const socket = useSocket()
     const {peer, myId} = usePeer();
     const {stream} = useMediaStream()
-    const [players,setPlayers] = usePlayer()
+    const {players,setPlayers} = usePlayer()
     useEffect(() => {
         if(!socket || !peer || !stream) return;
         const handleUserConnected = (newUser) => {
@@ -19,6 +19,14 @@ const Room = () => {
             const call = peer.call(newUser,stream)
             call.on('stream',(incomingStream) => {
                 console.log(`incoming stream from ${newUser}`)
+                setPlayers((prev) => ({
+                    ...prev,
+                    [newUser] : {
+                        url: incomingStream,
+                        muted: false,
+                        playing: true
+                    }
+                }))
             })
         }
         socket.on('user-connected',handleUserConnected)
@@ -35,13 +43,38 @@ const Room = () => {
             call.answer(stream)
             call.on('stream',(incomingStream) => {
                 console.log(`incoming stream from ${callerId}`)
-            })
+                setPlayers((prev) => ({
+                    ...prev,
+                    [callerId] : {
+                        url: incomingStream,
+                        muted: false,
+                        playing: true
+                    }
+                }))
+            }, [peer,setPlayers,stream])
         })
     },[peer, stream])
 
+    useEffect(() => {
+        if(!stream || !myId) return;
+        console.log(`setting my stream ${myId}`)
+        setPlayers((prev) => ({
+            ...prev,
+            [myId] : {
+                url: stream,
+                muted: false,
+                playing: true
+            }
+        }))
+        
+    },[myId,setPlayers,stream])
+
     return(
         <div>
-            <Player url={stream} muted playing playerId={myId}/>
+        {Object.keys(players).map((playerId) => {
+            const {url,muted,playing} = players[playerId]
+            return <Player key={playerId} url={url} muted={muted} playing={playing} />
+        })}
         </div>
     )
 }
