@@ -6,12 +6,14 @@ import usePlayer from "@/hooks/usePlayer"
 import Player from "@/component/Player"
 
 import styles from '@/styles/room.module.css'
+import { useRouter } from "next/router"
 
 const Room = () => {
     const socket = useSocket()
+    const {roomId} = useRouter().query
     const {peer, myId} = usePeer();
     const {stream} = useMediaStream()
-    const {players,setPlayers,playerHighlighted,nonHighlightedPlayers} = usePlayer(myId)
+    const {players,setPlayers,playerHighlighted,nonHighlightedPlayers} = usePlayer(myId,roomId)
     useEffect(() => {
         if(!socket || !peer || !stream) return;
         const handleUserConnected = (newUser) => {

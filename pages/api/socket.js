@@ -14,6 +14,15 @@ const SocketHandler = (req,res) => {
                 socket.join(roomId)
                 socket.broadcast.to(roomId).emit('user-connected',userId)
             })
+
+            socket.on('user-toggle-audio', (userId,roomId) => {
+                socket.join(roomId)
+                socket.broadcast.to(roomId).emit('user-toggle-audio',userId)
+            })
+            socket.on('user-toggle-video', (userId,roomId) => {
+                socket.join(roomId)
+                socket.broadcast.to(roomId).emit('user-toggle-video',userId)
+            })
         })
     }
     res.end();
