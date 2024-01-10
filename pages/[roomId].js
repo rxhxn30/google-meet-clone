@@ -7,13 +7,13 @@ import Player from "@/component/Player"
 import Bottom from "@/component/Bottom"
 import styles from '@/styles/room.module.css'
 import { useRouter } from "next/router"
-
+import { cloneDeep } from "lodash"
 const Room = () => {
     const socket = useSocket()
     const {roomId} = useRouter().query
     const {peer, myId} = usePeer();
     const {stream} = useMediaStream()
-    const {players,setPlayers,playerHighlighted,nonHighlightedPlayers,toggleAudio,toggleVideo} = usePlayer(myId,roomId)
+    const {players,setPlayers,playerHighlighted,nonHighlightedPlayers,toggleAudio,toggleVideo,leaveRoom} = usePlayer(myId,roomId, peer)
     useEffect(() => {
         if(!socket || !peer || !stream) return;
         const handleUserConnected = (newUser) => {
@@ -38,6 +38,34 @@ const Room = () => {
             socket.off('user-connected',handleUserConnected)
         }
     },[peer,socket,stream])    
+
+    useEffect(() => {
+        if(!socket) return;
+        const handleToggleAudio =(userId) => {
+            console.log(`user with id ${userId} toggled audio`)
+            setPlayers((prev) => {
+                const copy = cloneDeep(prev);
+                copy[userId].muted = !copy[userId].muted
+                return {...copy} 
+            })
+        }   
+
+        const handleToggleVideo =(userId) => {
+            console.log(`user with id ${userId} toggled video`)
+            setPlayers((prev) => {
+                const copy = cloneDeep(prev);
+                copy[userId].playing = !copy[userId].playing
+                return {...copy} 
+            })
+        }   
+
+        socket.on('user-toggle-audio',handleToggleAudio)
+        socket.on('user-toggle-video',handleToggleVideo)
+        return () => {
+            socket.off('user-toggle-audio',handleToggleAudio)
+            socket.off('user-toggle-video',handleToggleVideo)
+        }
+    },[setPlayers, socket])
 
     useEffect(() => {
         if(!peer || !stream) return
@@ -83,7 +111,7 @@ const Room = () => {
                 return <Player key={playerId} url={url} muted={muted} playing={playing} isActive={false} />
             })}
         </div>
-        <Bottom muted={playerHighlighted?.muted} playing={playerHighlighted?.playing} toggleAudio={toggleAudio} toggleVideo={toggleVideo} />
+        <Bottom muted={playerHighlighted?.muted} playing={playerHighlighted?.playing} toggleAudio={toggleAudio} toggleVideo={toggleVideo} leaveRoom={leaveRoom} />
         </>
     )
 }
